@@ -1,1 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>Bíblia Noisee 😁</title>
+
+<style>
+:root{
+--cor:#22c55e;
+--bg:#0f172a;
+--card:#1e293b;
+--text:white;
+}
+
+body{
+margin:0;
+font-family:Arial;
+background:var(--bg);
+color:var(--text);
+}
+
+header{
+padding:15px;
+text-align:center;
+background:var(--card);
+}
+
+button{
+padding:8px;
+margin:5px;
+border:none;
+border-radius:8px;
+background:var(--cor);
+color:white;
+}
+
+.container{padding:15px;}
+.hidden{display:none;}
+
+.livros,.caps{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:5px;
+}
+
+.verso{
+margin-bottom:10px;
+line-height:1.5;
+}
+
+.interlinear{
+font-size:12px;
+opacity:0.8;
+margin-left:10px;
+}
+</style>
+</head>
+
+<body>
+
+<header>📖 Bíblia Noisee 😁</header>
+
+<div class="container">
+
+<!-- HOME -->
+<div id="home">
+<h2>Para Vic e Yuki ❤️</h2>
+
+<button onclick="abrir('biblia')">📖 Bíblia</button>
+<button onclick="abrir('favoritos')">⭐ Favoritos</button>
+<button onclick="abrir('recentes')">📌 Últimos</button>
+<button onclick="toggleEstudo()">🧠 Estudo</button>
+<button onclick="abrir('temas')">🎨 Tema</button>
+</div>
+
+<!-- BÍBLIA -->
+<div id="biblia" class="hidden">
+<button onclick="abrir('home')">⬅</button>
+<div class="livros" id="livros"></div>
+</div>
+
+<!-- CAPÍTULOS -->
+<div id="capitulos" class="hidden">
+<button onclick="abrir('biblia')">⬅</button>
+<div class="caps" id="caps"></div>
+</div>
+
+<!-- TEXTO -->
+<div id="texto" class="hidden">
+<button onclick="abrir('capitulos')">⬅</button>
+<div id="conteudo"></div>
+</div>
+
+<!-- FAVORITOS -->
+<div id="favoritos" class="hidden">
+<button onclick="abrir('home')">⬅</button>
+<div id="fav"></div>
+</div>
+
+<!-- RECENTES -->
+<div id="recentes" class="hidden">
+<button onclick="abrir('home')">⬅</button>
+<div id="rec"></div>
+</div>
+
+<!-- TEMAS -->
+<div id="temas" class="hidden">
+<button onclick="setCor('#22c55e')">Verde</button>
+<button onclick="setCor('#3b82f6')">Azul</button>
+<button onclick="setCor('#ec4899')">Rosa</button>
+<button onclick="setCor('#ef4444')">Vermelho</button>
+<button onclick="setCor('#9333ea')">Roxo</button>
+<button onclick="setCor('#f97316')">Laranja</button>
+<button onclick="setCor('#eab308')">Dourado</button>
+<button onclick="setEscuro()">Escuro</button>
+<button onclick="setClaro()">Claro</button>
+<button onclick="abrir('home')">⬅ Voltar</button>
+</div>
+
+</div>
+
+<script src="biblia.js"></script>
+<script src="estudo.js"></script>
+
+<script>
+
+// CONTROLE
+let estudo=false;
+let tempo,versoSel;
+
+// NAVEGAÇÃO
+function abrir(id){
+document.querySelectorAll('.container > div').forEach(e=>e.classList.add('hidden'));
+document.getElementById(id).classList.remove('hidden');
+
+if(id==="favoritos") mostrarFav();
+if(id==="recentes") mostrarRec();
+}
+
+// TEMAS
+function setCor(c){
+document.documentElement.style.setProperty('--cor',c);
+}
+
+function setEscuro(){
+document.documentElement.style.setProperty('--bg','#0f172a');
+document.documentElement.style.setProperty('--card','#1e293b');
+document.documentElement.style.setProperty('--text','#fff');
+}
+
+function setClaro(){
+document.documentElement.style.setProperty('--bg','#f1f5f9');
+document.documentElement.style.setProperty('--card','#fff');
+document.documentElement.style.setProperty('--text','#000');
+}
+
+// ESTUDO
+function toggleEstudo(){
+estudo=!estudo;
+alert(estudo?"Estudo ON":"Estudo OFF");
+}
+
+// LIVROS
+const livrosDiv=document.getElementById("livros");
+
+Object.keys(BIBLIA).forEach(l=>{
+let b=document.createElement("button");
+b.innerText=l;
+b.onclick=()=>abrirCaps(l);
+livrosDiv.appendChild(b);
+});
+
+// CAPÍTULOS
+function abrirCaps(l){
+abrir("capitulos");
+
+let capsDiv=document.getElementById("caps");
+capsDiv.innerHTML="";
+
+for(let c in BIBLIA[l]){
+let b=document.createElement("button");
+b.innerText=c;
+b.onclick=()=>abrirTexto(l,c);
+capsDiv.appendChild(b);
+}
+}
+
+// TEXTO
+function abrirTexto(l,c){
+abrir("texto");
+
+let html="";
+
+BIBLIA[l][c].forEach((v,i)=>{
+let estudoTxt=ESTUDO[l]?.[c]?.[i] || "";
+
+html+=`
+<div class="verso"
+ontouchstart="segurar('${v}')"
+ontouchend="cancelar()">
+<b>${i+1}</b> ${v}
+${estudo && estudoTxt?`<div class="interlinear">${estudoTxt}</div>`:""}
+</div>`;
+});
+
+document.getElementById("conteudo").innerHTML=html;
+
+salvarRec(l+" "+c);
+}
+
+// FAVORITO (1 só)
+function segurar(v){
+versoSel=v;
+tempo=setTimeout(()=>{
+localStorage.setItem("fav",JSON.stringify([v]));
+navigator.vibrate(200);
+},2000);
+}
+
+function cancelar(){
+clearTimeout(tempo);
+}
+
+// MOSTRAR FAVORITO
+function mostrarFav(){
+let f=JSON.parse(localStorage.getItem("fav")||"[]");
+document.getElementById("fav").innerHTML=f.length?f[0]:"nada favoritado 😝";
+}
+
+// RECENTES
+function salvarRec(x){
+let r=JSON.parse(localStorage.getItem("rec")||"[]");
+r.unshift(x);
+r=[...new Set(r)];
+localStorage.setItem("rec",JSON.stringify(r.slice(0,5)));
+}
+
+function mostrarRec(){
+let r=JSON.parse(localStorage.getItem("rec")||"[]");
+document.getElementById("rec").innerHTML=r.join("<br>");
+}
+
+</script>
+
+</body>
+</html>

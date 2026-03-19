@@ -24,7 +24,6 @@ header{
 padding:15px;
 text-align:center;
 background:var(--card);
-font-size:18px;
 font-weight:bold;
 }
 
@@ -49,12 +48,11 @@ gap:8px;
 
 .verso{
 margin-bottom:14px;
-line-height:1.7;
 padding:8px;
 border-radius:10px;
 background:rgba(255,255,255,0.03);
+line-height:1.6;
 }
-
 </style>
 </head>
 
@@ -64,7 +62,6 @@ background:rgba(255,255,255,0.03);
 
 <div class="container">
 
-<!-- HOME -->
 <div id="home">
 <h2>Para Vic e Yuki ❤️</h2>
 
@@ -72,48 +69,45 @@ background:rgba(255,255,255,0.03);
 <button onclick="abrir('favoritos')">⭐ Favoritos</button>
 <button onclick="abrir('recentes')">📌 Últimos</button>
 <button onclick="abrir('temas')">🎨 Tema</button>
-<button onclick="alert('Em breve 😁')">🧠 Estudo Profundo</button>
+<button onclick="abrir('estudo')">🧠 Estudo Profundo</button>
 </div>
 
-<!-- BÍBLIA -->
 <div id="biblia" class="hidden">
 <button onclick="abrir('home')">⬅</button>
 <div id="livros" class="grid"></div>
 </div>
 
-<!-- CAPÍTULOS -->
 <div id="capitulos" class="hidden">
 <button onclick="abrir('biblia')">⬅</button>
 <div id="caps" class="grid"></div>
 </div>
 
-<!-- TEXTO -->
 <div id="texto" class="hidden">
 <button onclick="abrir('capitulos')">⬅</button>
 <div id="conteudo"></div>
 </div>
 
-<!-- FAVORITOS -->
 <div id="favoritos" class="hidden">
 <button onclick="abrir('home')">⬅</button>
 <div id="fav"></div>
 </div>
 
-<!-- RECENTES -->
 <div id="recentes" class="hidden">
 <button onclick="abrir('home')">⬅</button>
 <div id="rec"></div>
 </div>
 
-<!-- TEMAS -->
+<div id="estudo" class="hidden">
+<button onclick="abrir('home')">⬅</button>
+<p>Hebraico e Grego em breve 🔥</p>
+</div>
+
 <div id="temas" class="hidden">
 <button onclick="setCor('#22c55e')">Verde</button>
 <button onclick="setCor('#3b82f6')">Azul</button>
 <button onclick="setCor('#ec4899')">Rosa</button>
 <button onclick="setCor('#ef4444')">Vermelho</button>
 <button onclick="setCor('#9333ea')">Roxo</button>
-<button onclick="setCor('#f97316')">Laranja</button>
-<button onclick="setCor('#eab308')">Dourado</button>
 <button onclick="setEscuro()">Escuro</button>
 <button onclick="setClaro()">Claro</button>
 <button onclick="abrir('home')">⬅</button>
@@ -121,51 +115,12 @@ background:rgba(255,255,255,0.03);
 
 </div>
 
+<script src="biblia.js"></script>
+<script src="estudo.js"></script>
+
 <script>
-
-// ===== BÍBLIA (MAIS COMPLETA) =====
-const BIBLIA = {
-
-"Gênesis":{
-"1":[
-"No princípio criou Deus os céus e a terra.",
-"A terra estava sem forma e vazia.",
-"E disse Deus: Haja luz; e houve luz.",
-"Viu Deus que a luz era boa.",
-"E foi a tarde e a manhã, o primeiro dia."
-],
-"2":[
-"Assim foram acabados os céus e a terra.",
-"E havendo Deus terminado a obra.",
-"Abençoou Deus o sétimo dia.",
-"Esta é a origem dos céus e da terra.",
-"No dia em que o Senhor Deus fez a terra."
-]
-},
-
-"Êxodo":{
-"1":[
-"São estes os nomes dos filhos de Israel.",
-"Cada um entrou com sua família.",
-"Rúben, Simeão, Levi e Judá.",
-"Todos eram setenta pessoas."
-]
-},
-
-"Salmos":{
-"1":[
-"Bem-aventurado o homem que não anda segundo o conselho dos ímpios.",
-"Antes, tem o seu prazer na lei do Senhor.",
-"E na sua lei medita de dia e de noite."
-]
-}
-
-};
-
-// ===== SISTEMA =====
 let tempo;
 
-// navegação
 function abrir(id){
 document.querySelectorAll('.container > div').forEach(e=>e.classList.add('hidden'));
 document.getElementById(id).classList.remove('hidden');
@@ -174,7 +129,6 @@ if(id==="favoritos") mostrarFav();
 if(id==="recentes") mostrarRec();
 }
 
-// temas
 function setCor(c){document.documentElement.style.setProperty('--cor',c);}
 function setEscuro(){
 document.documentElement.style.setProperty('--bg','#0f172a');
@@ -185,7 +139,6 @@ document.documentElement.style.setProperty('--bg','#f1f5f9');
 document.documentElement.style.setProperty('--text','#000');
 }
 
-// livros
 const livrosDiv=document.getElementById("livros");
 
 Object.keys(BIBLIA).forEach(l=>{
@@ -195,7 +148,6 @@ b.onclick=()=>abrirCaps(l);
 livrosDiv.appendChild(b);
 });
 
-// capítulos
 function abrirCaps(l){
 abrir("capitulos");
 let capsDiv=document.getElementById("caps");
@@ -209,41 +161,51 @@ capsDiv.appendChild(b);
 }
 }
 
-// texto
 function abrirTexto(l,c){
 abrir("texto");
 let html="";
 
 BIBLIA[l][c].forEach((v,i)=>{
+let nota = localStorage.getItem("nota_"+v) || "";
+
 html+=`
 <div class="verso"
 ontouchstart="segurar('${v}')"
 ontouchend="cancelar()">
 <b>${i+1}</b> ${v}
+${nota?`<div style="color:yellow;">📝 ${nota}</div>`:""}
 </div>`;
 });
 
 document.getElementById("conteudo").innerHTML=html;
-
 salvarRec(l+" "+c);
 }
 
-// favorito (REGRAS)
 function segurar(v){
 tempo=setTimeout(()=>{
-localStorage.setItem("fav",JSON.stringify([v]));
 navigator.vibrate(200);
+
+let escolha = prompt("1 = Favoritar\n2 = Anotar");
+
+if(escolha=="1"){
+localStorage.setItem("fav",JSON.stringify([v]));
+}
+
+if(escolha=="2"){
+let nota = prompt("Digite sua anotação:");
+localStorage.setItem("nota_"+v, nota);
+}
+
 },2000);
 }
+
 function cancelar(){clearTimeout(tempo);}
 
-// mostrar favorito
 function mostrarFav(){
 let f=JSON.parse(localStorage.getItem("fav")||"[]");
 document.getElementById("fav").innerHTML=f.length?f[0]:"nada favoritado 😝";
 }
 
-// recentes
 function salvarRec(x){
 let r=JSON.parse(localStorage.getItem("rec")||"[]");
 r.unshift(x);
@@ -255,7 +217,6 @@ function mostrarRec(){
 let r=JSON.parse(localStorage.getItem("rec")||"[]");
 document.getElementById("rec").innerHTML=r.join("<br>");
 }
-
 </script>
 
 </body>

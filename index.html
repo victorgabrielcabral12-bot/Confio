@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Estudo Bíblico para Noisee 😁</title>
+<title>Estudo Bíblico 😁</title>
 
 <style>
 :root{
@@ -58,7 +58,7 @@ line-height:1.6;
 
 <body>
 
-<header>📖 Estudo Bíblico para Noisee 😁</header>
+<header>📖 Estudo Bíblico</header>
 
 <div class="container">
 
@@ -99,7 +99,8 @@ line-height:1.6;
 
 <div id="estudo" class="hidden">
 <button onclick="abrir('home')">⬅</button>
-<p>Hebraico e Grego em breve 🔥</p>
+<h3>Gênesis 1:1</h3>
+<div id="interlinear"></div>
 </div>
 
 <div id="temas" class="hidden">
@@ -127,6 +128,7 @@ document.getElementById(id).classList.remove('hidden');
 
 if(id==="favoritos") mostrarFav();
 if(id==="recentes") mostrarRec();
+if(id==="estudo") carregarEstudo();
 }
 
 function setCor(c){document.documentElement.style.setProperty('--cor',c);}
@@ -185,6 +187,22 @@ function segurar(v){
 tempo=setTimeout(()=>{
 navigator.vibrate(200);
 
+let fav = JSON.parse(localStorage.getItem("fav")||"[]");
+
+if(fav.includes(v)){
+let escolha = prompt("1 = Remover dos favoritos\n2 = Anotar");
+
+if(escolha=="1"){
+localStorage.setItem("fav",JSON.stringify([]));
+}
+
+if(escolha=="2"){
+let nota = prompt("Digite sua anotação:");
+localStorage.setItem("nota_"+v, nota);
+}
+
+}else{
+
 let escolha = prompt("1 = Favoritar\n2 = Anotar");
 
 if(escolha=="1"){
@@ -194,6 +212,8 @@ localStorage.setItem("fav",JSON.stringify([v]));
 if(escolha=="2"){
 let nota = prompt("Digite sua anotação:");
 localStorage.setItem("nota_"+v, nota);
+}
+
 }
 
 },2000);
@@ -216,6 +236,22 @@ localStorage.setItem("rec",JSON.stringify(r.slice(0,5)));
 function mostrarRec(){
 let r=JSON.parse(localStorage.getItem("rec")||"[]");
 document.getElementById("rec").innerHTML=r.join("<br>");
+}
+
+function carregarEstudo(){
+let dados = ESTUDO["gn1_1"];
+let html="";
+
+dados.hebraico.forEach(p=>{
+html+=`
+<div style="margin-bottom:10px;">
+<div style="font-size:20px;">${p[0]}</div>
+<div style="font-size:12px;opacity:0.7;">${p[1]}</div>
+</div>
+`;
+});
+
+document.getElementById("interlinear").innerHTML=html;
 }
 </script>
 
